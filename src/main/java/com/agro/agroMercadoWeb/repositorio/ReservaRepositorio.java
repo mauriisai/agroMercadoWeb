@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface ReservaRepositorio extends JpaRepository<Reserva, Long> {
     List<Reserva> findByCompradorId(Long compradorId);
+
+    // Devuelve las reservas según comprador y estado (ejemplo: PENDIENTE)
+    List<Reserva> findByComprador_IdAndEstado(Long compradorId, Reserva.EstadoReserva estado);
 }

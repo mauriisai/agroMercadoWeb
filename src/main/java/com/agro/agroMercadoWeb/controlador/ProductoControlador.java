@@ -92,10 +92,10 @@ public class ProductoControlador {
         boolean activo = productoServicio.cambiarEstado(id);
 
         if (activo) {
-            redirectAttributes.addFlashAttribute("mensaje", "El producto fue habilitado correctamente.");
+            redirectAttributes.addFlashAttribute("mensaje", "Publicación habilitada correctamente.");
             redirectAttributes.addFlashAttribute("tipo", "success");
         } else {
-            redirectAttributes.addFlashAttribute("mensaje", "El producto fue inactivado correctamente.");
+            redirectAttributes.addFlashAttribute("mensaje", "Publicación inactivada correctamente.");
             redirectAttributes.addFlashAttribute("tipo", "warning");
         }
 

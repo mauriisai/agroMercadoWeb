@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Carrito</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</head>
+<body>
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container mt-5">
+    <h3 class="text-success mb-4">Mi Carrito 🛒</h3>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Precio Unitario</th>
+            <th>Cantidad</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Opciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="res : ${reservas}">
+            <td th:text="${res.productoNombre}"></td>
+            <td th:text="'$' + ${#numbers.formatDecimal(res.precioUnitario, 1, 'POINT', 2, 'COMMA')}"></td>
+            <td th:text="${res.cantidad}"></td>
+            <td th:text="'$' + ${#numbers.formatDecimal(res.total, 1, 'POINT', 2, 'COMMA')}"></td>
+            <td><span class="badge bg-warning" th:text="${res.estado}"></span></td>
+            <td>
+
+                <!-- Eliminar del carrito -->
+                <form th:action="@{'/reserva/eliminar/' + ${res.id}}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

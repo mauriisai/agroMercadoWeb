@@ -21,7 +21,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <h4>Productos publicados</h4>
-    <table class="table table-striped">
+    <table class="table table-striped paginable">
         <thead>
         <tr>
             <th>Nombre</th>
@@ -47,7 +47,7 @@
                     <button type="submit"
                             th:classappend="${prod.activo} ? 'btn btn-danger btn-sm' : 'btn btn-success btn-sm'">
                         <i th:class="${prod.activo} ? 'bi bi-x-circle' : 'bi bi-check-circle'"></i>
-                        <span th:text="${prod.activo} ? 'Inactivar' : 'Habilitar'"></span>
+                        <span th:text="${prod.activo} ? 'Inactivar Publicación' : 'Habilitar Publicación'"></span>
                     </button>
                 </form>
             </td>
@@ -58,6 +58,5 @@
 
 <!-- Footer -->
 <div th:replace="fragments/footer :: footer"></div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

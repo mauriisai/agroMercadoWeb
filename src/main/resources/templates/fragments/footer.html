@@ -13,6 +13,56 @@
             Desarrollado por Grupo 05 – Ingeniería de Software | Universidad de El Salvador © 2025
         </p>
     </div>
+
+    <!-- Scripts globales -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script de paginación global -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const filasPorPagina = 10;
+        document.querySelectorAll("table.paginable").forEach((tabla) => {
+            const filas = tabla.querySelectorAll("tbody tr");
+            const totalFilas = filas.length;
+            const totalPaginas = Math.ceil(totalFilas / filasPorPagina);
+            if (totalPaginas <= 1) return;
+
+            const paginacion = document.createElement("ul");
+            paginacion.className = "pagination justify-content-center mt-3";
+            paginacion.innerHTML = `
+                <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
+                ${Array.from({ length: totalPaginas }, (_, i) =>
+                    `<li class="page-item"><a class="page-link" href="#">${i + 1}</a></li>`
+                ).join("")}
+                <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
+            `;
+            tabla.insertAdjacentElement("afterend", paginacion);
+
+            let paginaActual = 0;
+            function mostrarPagina(pagina) {
+                const inicio = pagina * filasPorPagina;
+                const fin = inicio + filasPorPagina;
+                filas.forEach((fila, i) => fila.style.display = (i >= inicio && i < fin) ? "" : "none");
+                const botones = paginacion.querySelectorAll(".page-item");
+                botones.forEach((btn, i) => btn.classList.toggle("active", i === pagina + 1));
+                botones[0].classList.toggle("disabled", pagina === 0);
+                botones[botones.length - 1].classList.toggle("disabled", pagina === totalPaginas - 1);
+            }
+            const botones = paginacion.querySelectorAll(".page-item");
+            botones.forEach((btn, i) => {
+                btn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    if (i === 0 && paginaActual > 0) paginaActual--;
+                    else if (i === botones.length - 1 && paginaActual < totalPaginas - 1) paginaActual++;
+                    else if (i > 0 && i < botones.length - 1) paginaActual = i - 1;
+                    mostrarPagina(paginaActual);
+                });
+            });
+            mostrarPagina(0);
+        });
+    });
+    </script>
+
 </footer>
 
 </body>
