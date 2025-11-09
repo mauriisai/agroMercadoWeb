@@ -120,22 +120,27 @@ public class ReservaServicioImpl implements ReservaServicio {
     }
 
     @Override
-    public void confirmarCompra(Long id) {
-        Reserva reserva = reservaRepositorio.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
-
-        // Cambiar estado a CONFIRMADA
-        reserva.setEstado(Reserva.EstadoReserva.CONFIRMADA);
-
-        reservaRepositorio.save(reserva);
-    }
-
-    @Override
     public void cancelarReserva(Long id) {
         Reserva reserva = reservaRepositorio.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
 
         reserva.setEstado(Reserva.EstadoReserva.CANCELADA);
         reservaRepositorio.save(reserva);
+    }
+
+    @Override
+    public void confirmarReservasPorComprador(Long compradorId) {
+        List<Reserva> pendientes = reservaRepositorio.findByComprador_IdAndEstado(
+                compradorId, Reserva.EstadoReserva.PENDIENTE);
+
+        if (pendientes.isEmpty()) {
+            System.out.println("Reservas pagadas para confirmar.");
+            return;
+        }
+
+        pendientes.forEach(reserva -> reserva.setEstado(Reserva.EstadoReserva.CONFIRMADA));
+        reservaRepositorio.saveAll(pendientes);
+
+        System.out.println(pendientes.size() + " reservas confirmadas para el comprador ID " + compradorId);
     }
 }

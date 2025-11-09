@@ -42,6 +42,10 @@ public class Reserva {
     @Column(name = "fecha_reserva", nullable = false)
     private LocalDateTime fechaReserva = LocalDateTime.now();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pago_id")
+    private Pago pago;
+
     public enum EstadoReserva {
         PENDIENTE, CONFIRMADA, ENTREGADA, CANCELADA
     }

@@ -19,7 +19,6 @@
             <th>Precio Unitario</th>
             <th>Cantidad</th>
             <th>Total</th>
-            <th>Estado</th>
             <th>Opciones</th>
         </tr>
         </thead>
@@ -29,9 +28,7 @@
             <td th:text="'$' + ${#numbers.formatDecimal(res.precioUnitario, 1, 'POINT', 2, 'COMMA')}"></td>
             <td th:text="${res.cantidad}"></td>
             <td th:text="'$' + ${#numbers.formatDecimal(res.total, 1, 'POINT', 2, 'COMMA')}"></td>
-            <td><span class="badge bg-warning" th:text="${res.estado}"></span></td>
             <td>
-
                 <!-- Eliminar del carrito -->
                 <form th:action="@{'/reserva/eliminar/' + ${res.id}}" method="post" style="display:inline;">
                     <button type="submit" class="btn btn-danger btn-sm">
@@ -41,7 +38,30 @@
             </td>
         </tr>
         </tbody>
+        <tfoot>
+        <tr>
+            <th colspan="3" class="text-start">Total General:</th>
+            <th th:text="'$' + ${#numbers.formatDecimal(totalGeneral, 1, 'POINT', 2, 'COMMA')}"></th>
+            <th colspan="2"></th>
+        </tr>
+        </tfoot>
     </table>
+
+    <div class="text-start mt-3">
+        <form th:action="@{/reserva/form-procesarPago}" method="get">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-truck"></i> Continuar con el pago y entrega
+            </button>
+        </form>
+    </div>
+
+    <div class="text-start mt-3">
+        <form th:action="@{/pagar}" method="post">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-credit-card"></i> Pagar
+            </button>
+        </form>
+    </div>
 </div>
 
 <div th:replace="fragments/footer :: footer"></div>
