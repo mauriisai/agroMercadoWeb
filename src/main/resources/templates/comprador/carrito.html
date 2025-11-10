@@ -68,11 +68,11 @@
             </tfoot>
         </table>
         <div class="text-end mt-4">
-            <form th:action="@{/reserva/form-procesarPago}" method="get">
+            <form th:action="@{/operador/entrega}" method="get">
                 <button type="submit"
                         class="btn btn-success btn-lg"
                         th:disabled="${reservas == null or reservas.empty}">
-                    <i class="bi bi-credit-card"></i> Continuar con el pago y entrega
+                    <i class="bi bi-truck"></i> Entrega y Pago
                 </button>
             </form>
 

@@ -18,7 +18,6 @@ public class SeguridadConfig {
                         .requestMatchers("/login", "/registro", "/crearUsuario", "/css/**", "/images/**").permitAll()
                         .requestMatchers("/productor/**").hasRole("PRODUCTOR")
                         .requestMatchers("/comprador/**").hasRole("COMPRADOR")
-                        .requestMatchers("/operador/**").hasRole("OPERADOR")
                         .anyRequest().authenticated()
                 )
                 .formLogin(login -> login

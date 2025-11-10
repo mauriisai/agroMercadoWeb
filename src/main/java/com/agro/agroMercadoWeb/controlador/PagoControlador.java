@@ -1,5 +1,6 @@
 package com.agro.agroMercadoWeb.controlador;
 
+import com.agro.agroMercadoWeb.dto.EntregaDTO;
 import com.agro.agroMercadoWeb.dto.PagoDTO;
 import com.agro.agroMercadoWeb.dto.ReservaDTO;
 import com.agro.agroMercadoWeb.modelo.Pago;
@@ -9,6 +10,7 @@ import com.agro.agroMercadoWeb.servicio.ReservaServicio;
 import com.agro.agroMercadoWeb.servicio.UsuarioServicio;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
@@ -35,10 +37,13 @@ public class PagoControlador {
     @PostMapping
     @Transactional
     public String procesarPago(@ModelAttribute("pago") PagoDTO pagoDTO,
-                               Authentication authentication,
-                               Model model) {  // AGREGAR Model como parámetro
+                               Authentication authentication, HttpSession session,
+                               Model model) {
         try {
             System.out.println("INICIANDO PROCESO DE PAGO - Método: " + pagoDTO.getMetodo());
+
+            // Recuperar datos de entrega
+            EntregaDTO entregaDTO = (EntregaDTO) session.getAttribute("entregaData");
 
             Usuario comprador = usuarioServicio.buscarPorCorreo(authentication.getName());
             List<ReservaDTO> reservas = reservaServicio.listarPendientesPorComprador(comprador.getId());
@@ -133,6 +138,12 @@ public class PagoControlador {
             // Confirmar reservas
             reservaServicio.confirmarReservasPorComprador(comprador.getId(), nuevoPago);
 
+            // Llamar Microservicio de Pedidos
+            if (entregaDTO != null) {
+                crearPedidosEnMicroservicio(reservas, comprador, entregaDTO, nuevoPago);
+                session.removeAttribute("entregaData"); // Limpiar sesión
+            }
+
             System.out.println("PAGO EXITOSO - " + reservas.size() + " reservas confirmadas. Comprobante: " + comprobanteId);
 
             return "redirect:/comprador/carrito?pagoExitoso=true";
@@ -144,6 +155,43 @@ public class PagoControlador {
             // Agregar error al modelo y recargar el formulario
             model.addAttribute("error", e.getMessage());
             return cargarFormularioPago(model, authentication);
+        }
+    }
+
+    private void crearPedidosEnMicroservicio(List<ReservaDTO> reservas, Usuario comprador,
+                                             EntregaDTO entregaDTO, Pago pago) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            System.out.println("probando api");
+
+            for (ReservaDTO reserva : reservas) {
+                Map<String, Object> pedidoRequest = new HashMap<>();
+                pedidoRequest.put("reservaId", reserva.getId());
+                pedidoRequest.put("modalidadEntrega", entregaDTO.getModalidadEntrega());
+                pedidoRequest.put("direccionEntrega", entregaDTO.getDireccionEntrega());
+                pedidoRequest.put("fechaEntrega", entregaDTO.getFechaEntrega().toString());
+                pedidoRequest.put("operadorId", null);
+                pedidoRequest.put("pagoId", pago.getId());
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+
+                ObjectMapper mapper = new ObjectMapper();
+                String pedidoJson = mapper.writeValueAsString(pedidoRequest);
+
+                HttpEntity<String> request = new HttpEntity<>(pedidoJson, headers);
+
+                ResponseEntity<String> response = restTemplate.postForEntity(
+                        "http://localhost:8082/api/pedidos",
+                        request,
+                        String.class
+                );
+
+                System.out.println("Pedido creado para reserva: " + reserva.getId());
+            }
+        } catch (Exception e) {
+            System.out.println("Error creando pedidos: " + e.getMessage());
         }
     }
 

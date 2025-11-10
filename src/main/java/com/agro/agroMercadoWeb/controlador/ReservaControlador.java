@@ -1,5 +1,6 @@
 package com.agro.agroMercadoWeb.controlador;
 
+import com.agro.agroMercadoWeb.dto.EntregaDTO;
 import com.agro.agroMercadoWeb.dto.PagoDTO;
 import com.agro.agroMercadoWeb.dto.ProductoDTO;
 import com.agro.agroMercadoWeb.dto.ReservaDTO;
@@ -9,6 +10,7 @@ import com.agro.agroMercadoWeb.servicio.ProductoServicio;
 import com.agro.agroMercadoWeb.servicio.ReservaServicio;
 import com.agro.agroMercadoWeb.servicio.UsuarioServicio;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -45,20 +47,36 @@ public class ReservaControlador {
     }
 
     @GetMapping("/form-procesarPago")
-    public String mostrarFormularioPago(Model model, Authentication authentication) {
-        Usuario comprador = usuarioServicio.buscarPorCorreo(authentication.getName());
-        List<ReservaDTO> reservas = reservaServicio.listarPendientesPorComprador(comprador.getId());
+    public String mostrarFormularioPago(Model model, Authentication authentication,
+                                        HttpSession session) {
+        try {
+            Usuario comprador = usuarioServicio.buscarPorCorreo(authentication.getName());
+            List<ReservaDTO> reservas = reservaServicio.listarPendientesPorComprador(comprador.getId());
 
-        // Calcular total general
-        BigDecimal totalGeneral = reservas.stream()
-                .map(ReservaDTO::getTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            System.out.println("entra luego de entrega");
 
-        model.addAttribute("reservas", reservas);
-        model.addAttribute("totalGeneral", totalGeneral);
-        model.addAttribute("pago", new PagoDTO());
+            // Recuperar datos de entrega
+            EntregaDTO entregaDTO = (EntregaDTO) session.getAttribute("entregaData");
 
-        return "reserva/form_procesarPago";
+            if (entregaDTO != null) {
+                System.out.println("   - Dirección: " + entregaDTO.getDireccionEntrega());
+                model.addAttribute("entregaData", entregaDTO);
+            }
+
+            // Calcular total general
+            BigDecimal totalGeneral = reservas.stream()
+                    .map(ReservaDTO::getTotal)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            model.addAttribute("reservas", reservas);
+            model.addAttribute("totalGeneral", totalGeneral);
+            model.addAttribute("pago", new PagoDTO());
+
+            return "reserva/form_procesarPago";
+
+        } catch (Exception e) {
+            return "redirect:/comprador/carrito";
+        }
     }
 
     @PostMapping("/guardar")
