@@ -16,6 +16,5 @@ public class PagoDTO {
     private String expira;
     private String cvv;
     private BigDecimal monto;
-    private List<Long> reservasIds; // varias reservas asociadas
 }
 

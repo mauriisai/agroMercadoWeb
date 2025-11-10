@@ -1,6 +1,7 @@
 package com.agro.agroMercadoWeb.servicio.impl;
 
 import com.agro.agroMercadoWeb.dto.ReservaDTO;
+import com.agro.agroMercadoWeb.modelo.Pago;
 import com.agro.agroMercadoWeb.modelo.Producto;
 import com.agro.agroMercadoWeb.modelo.Reserva;
 import com.agro.agroMercadoWeb.modelo.Usuario;
@@ -11,6 +12,7 @@ import com.agro.agroMercadoWeb.servicio.ReservaServicio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,6 +62,7 @@ public class ReservaServicioImpl implements ReservaServicio {
                 .cantidad(dto.getCantidad())
                 .precioUnitario(dto.getPrecioUnitario())
                 .total(total)
+                .fechaReserva(LocalDateTime.now())
                 .estado(Reserva.EstadoReserva.valueOf("PENDIENTE"))
                 .build();
 
@@ -129,7 +132,7 @@ public class ReservaServicioImpl implements ReservaServicio {
     }
 
     @Override
-    public void confirmarReservasPorComprador(Long compradorId) {
+    public void confirmarReservasPorComprador(Long compradorId, Pago pago) {
         List<Reserva> pendientes = reservaRepositorio.findByComprador_IdAndEstado(
                 compradorId, Reserva.EstadoReserva.PENDIENTE);
 
@@ -138,7 +141,10 @@ public class ReservaServicioImpl implements ReservaServicio {
             return;
         }
 
-        pendientes.forEach(reserva -> reserva.setEstado(Reserva.EstadoReserva.CONFIRMADA));
+        pendientes.forEach(reserva -> {
+            reserva.setEstado(Reserva.EstadoReserva.CONFIRMADA);
+            reserva.setPago(pago); // Asignar el pago a cada reserva
+        });
         reservaRepositorio.saveAll(pendientes);
 
         System.out.println(pendientes.size() + " reservas confirmadas para el comprador ID " + compradorId);

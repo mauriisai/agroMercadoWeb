@@ -12,58 +12,95 @@
 <div class="container mt-5">
     <h3 class="text-success mb-4">Mi Carrito 🛒</h3>
 
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Producto</th>
-            <th>Precio Unitario</th>
-            <th>Cantidad</th>
-            <th>Total</th>
-            <th>Opciones</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="res : ${reservas}">
-            <td th:text="${res.productoNombre}"></td>
-            <td th:text="'$' + ${#numbers.formatDecimal(res.precioUnitario, 1, 'POINT', 2, 'COMMA')}"></td>
-            <td th:text="${res.cantidad}"></td>
-            <td th:text="'$' + ${#numbers.formatDecimal(res.total, 1, 'POINT', 2, 'COMMA')}"></td>
-            <td>
-                <!-- Eliminar del carrito -->
-                <form th:action="@{'/reserva/eliminar/' + ${res.id}}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-        <tfoot>
-        <tr>
-            <th colspan="3" class="text-start">Total General:</th>
-            <th th:text="'$' + ${#numbers.formatDecimal(totalGeneral, 1, 'POINT', 2, 'COMMA')}"></th>
-            <th colspan="2"></th>
-        </tr>
-        </tfoot>
-    </table>
-
-    <div class="text-start mt-3">
-        <form th:action="@{/reserva/form-procesarPago}" method="get">
-            <button type="submit" class="btn btn-success btn-lg">
-                <i class="bi bi-truck"></i> Continuar con el pago y entrega
-            </button>
-        </form>
+    <!-- Mostrar éxito -->
+    <div th:if="${param.pagoExitoso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>¡Éxito!</strong> Pago procesado correctamente. Tus productos están en camino.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div class="text-start mt-3">
-        <form th:action="@{/pagar}" method="post">
-            <button type="submit" class="btn btn-success btn-lg">
-                <i class="bi bi-credit-card"></i> Pagar
-            </button>
-        </form>
+    <!-- Mostrar mensaje si no hay reservas -->
+    <div th:if="${reservas == null or reservas.empty}" class="text-center py-5">
+        <div class="alert alert-info">
+            <i class="bi bi-cart-x" style="font-size: 3rem;"></i>
+            <h4 class="mt-3">Carrito vacío</h4>
+            <p class="mb-0">No tienes productos en tu carrito.</p>
+            <a th:href="@{/comprador/index}" class="btn btn-primary mt-3">
+                <i class="bi bi-bag-plus"></i> Ir a productos
+            </a>
+        </div>
     </div>
+
+    <!-- Mostrar tabla solo si hay reservas -->
+    <div th:if="${reservas != null and !reservas.empty}">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio Unitario</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th>Opciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="res : ${reservas}">
+                <td th:text="${res.productoNombre}"></td>
+                <td th:text="'$' + ${#numbers.formatDecimal(res.precioUnitario, 1, 'POINT', 2, 'COMMA')}"></td>
+                <td th:text="${res.cantidad}"></td>
+                <td th:text="'$' + ${#numbers.formatDecimal(res.total, 1, 'POINT', 2, 'COMMA')}"></td>
+                <td>
+                    <!-- Eliminar del carrito -->
+                    <form th:action="@{'/reserva/eliminar/' + ${res.id}}" method="post" style="display:inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar del carrito">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr class="table-success">
+                <th colspan="3" class="text-start fs-5">Total General:</th>
+                <th class="fs-5" th:text="'$' + ${#numbers.formatDecimal(totalGeneral, 1, 'POINT', 2, 'COMMA')}"></th>
+                <th></th>
+            </tr>
+            </tfoot>
+        </table>
+        <div class="text-end mt-4">
+            <form th:action="@{/reserva/form-procesarPago}" method="get">
+                <button type="submit"
+                        class="btn btn-success btn-lg"
+                        th:disabled="${reservas == null or reservas.empty}">
+                    <i class="bi bi-credit-card"></i> Continuar con el pago y entrega
+                </button>
+            </form>
+
+            <!-- Mensaje informativo cuando el botón está deshabilitado -->
+            <div th:if="${reservas == null or reservas.empty}" class="mt-2">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> Agrega productos al carrito para habilitar el pago
+                </small>
+            </div>
+        </div>
+
+    </div>
+
 </div>
 
 <div th:replace="fragments/footer :: footer"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Deshabilitar el botón de pago si no hay reservas
+        const reservasCount = [[${reservas != null ? reservas.size() : 0}]];
+        const pagarBtn = document.querySelector('form[th\\:action="@{/pagar}"] button');
+
+        if (pagarBtn && reservasCount === 0) {
+            pagarBtn.disabled = true;
+            pagarBtn.classList.add('disabled');
+        }
+    });
+</script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 package com.agro.agroMercadoWeb.servicio;
 
 import com.agro.agroMercadoWeb.dto.ReservaDTO;
+import com.agro.agroMercadoWeb.modelo.Pago;
 import com.agro.agroMercadoWeb.modelo.Usuario;
 
 import java.util.List;
@@ -11,5 +12,5 @@ public interface ReservaServicio {
     List<ReservaDTO> listarPendientesPorComprador(Long compradorId);
 
     void cancelarReserva(Long id);
-    void confirmarReservasPorComprador(Long compradorId);
+    void confirmarReservasPorComprador(Long compradorId, Pago pago);
 }
